@@ -1,7 +1,7 @@
-from MST import MST
+from Graph_Algorithm import Graph
 
 if __name__ == "__main__":
-    temp = MST(5, [
+    temp = Graph(5, [
         ((0, 1), 1),
         ((0, 2), 2),
         ((0, 4), 6),
