@@ -10,7 +10,7 @@ class Graph:
     #naive kruskal
     #return minimum spanning tree in the form of a list of edges as well as its edges
     #overall runtime O(m*n), where m is the number of edges and n is the number of vertices
-    def naive_kruskal(self):
+    def naive_kruskal_mst(self):
         mst = []
         connected_components = []
         for vertex in range(self.vertices):
@@ -28,7 +28,7 @@ class Graph:
 
     #naive kruskal modified approach for maximum cost forest
     #overall runtime O(m*n), where m is the number of edges and n is the number of vertices
-    def naive_kruskal(self):
+    def naive_kruskal_mcf(self):
         mcf = []
         connected_components = []
         for vertex in range(self.vertices):
