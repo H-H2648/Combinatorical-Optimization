@@ -6,7 +6,7 @@ class Matroid:
     #only the ground_set is required but one of circuits, bases, independent_set is required to run greedy algorithm
     #ground_set, independent_set, circuits, bases are assumed to be sets of sets
     #all sets are assumed to be frozen
-    def __init__(self, ground_set, independent_set = None, circuits = None, bases = None):
+    def __init__(self, ground_set = None, independent_set = None, circuits = None, bases = None):
         self.ground_set = ground_set
         self.independent_set = independent_set
         self.circuits = circuits
@@ -16,7 +16,7 @@ class Matroid:
     def generate_power_ground_set(self):
         self.power_ground_set = power_set(self.ground_set)
 
-    # NOTE: IF YOU SET THE INDEPENDENT SET, CIRCUITS, BASES TO BE INCONSISTENT BETWEEN EACH OTHER, THE PROGRAM WILL FAIL TO OUTPUT THE CORRECT ANSWER
+    #NOTE: IF YOU SET THE INDEPENDENT SET, CIRCUITS, BASES TO BE INCONSISTENT BETWEEN EACH OTHER, THE PROGRAM WILL FAIL TO OUTPUT THE CORRECT ANSWER
 
     def set_independent_set(self, independent_set):
         self.independent_set = independent_set
@@ -41,9 +41,9 @@ class Matroid:
                 self.independent_set.add(element)
             self.independent_set = frozenset(self.independent_set)
 
-   def form_independent_set_from_bases(self):
-       if self.bases is None:
-           print("ERROR must have bases")
+    def form_independent_set_from_bases(self):
+        if self.bases is None:
+            print("ERROR must have bases")
         if self.power_ground_set is None:
             self.generate_power_ground_set()
         else:
@@ -110,6 +110,10 @@ class Matroid:
                     continue
                 return False
         return True
+
+    def is_independent(self, some_set):
+        return (some_set in self.independent_set)
+
                     
 
                 
