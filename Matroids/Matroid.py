@@ -35,7 +35,7 @@ class Matroid:
         else:
             self.independent_set = set()
             for element in self.power_ground_set:
-                for circuit in circuits:
+                for circuit in self.circuits:
                     if circuit.issubset(element):
                         break
                 self.independent_set.add(element)
@@ -65,7 +65,7 @@ class Matroid:
                 if not(ind_subset in self.independent_set):
                     return False
         #M3'
-        for X, Y in combination(self.independent_set, 2):
+        for X, Y in combinations.combination(self.independent_set, 2):
             if len(X) != len(Y):
                 if len(Y) > len(X):
                     X, Y = Y, X
@@ -80,12 +80,12 @@ class Matroid:
         if (frozenset(set()) in self.circuits):
             return False
         #C2
-        for C1, C2 in combination(self.circuits, 2):
+        for C1, C2 in combinations.combination(self.circuits, 2):
             if C1.issubset(C2) or C2.issubset(C1):
                 #since we have combination, if they are already distinct
                 return False
         #C3
-        for C1, C2 in combination(self.circuits, 2):
+        for C1, C2 in combinations.combination(self.circuits, 2):
             for element in C1.union(C2):
                 test_set = (C1.union(C2)).difference(frozenset({element}))
                 for circuit in self.circuits:
@@ -104,7 +104,7 @@ class Matroid:
             return False
         if self.bases == frozenset(set()):
             return False
-        for B1, B2 in combination(self.bases, 2):
+        for B1, B2 in combinations.combination(self.bases, 2):
             for x in B1.difference(B2):
                 if check_bases_helper(B1, B2, x, self.bases):
                     continue
@@ -113,6 +113,31 @@ class Matroid:
 
     def is_independent(self, some_set):
         return (some_set in self.independent_set)
+
+    def set_costs(self, costs_dict):
+        costs = []
+        for key in costs_dict:
+            costs.append((key, costs_dict[key]))
+        costs = sorted(costs, key = lambda x: x[1], reverse=True)
+        return costs
+
+    def max_cost_greedy(self, costs_dict):
+        costs = self.set_costs(costs_dict)
+        object_so_far = set()
+        for elem, cost in costs:
+            if cost <= 0:
+                break
+            else:
+                object_so_far.add(elem)
+                if not(self.is_independent(object_so_far)):
+                    object_so_far.remove(elem)
+        return object_so_far
+
+    def min_cost_greedy(self, costs_dict):
+        for elem in costs_dict:
+            costs_dict[elem] = -costs_dict[elem]
+        return self.max_cost_greedy(costs_dict)
+            
 
                     
 
