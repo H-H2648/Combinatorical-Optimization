@@ -1,5 +1,7 @@
 from Matroid import Matroid
 from collections import defaultdict
+import numpy as np
+from numpy.linalg import matrix_rank
 
 ###
 ### MAXIMUM COST FOREST
@@ -97,11 +99,75 @@ costs = {
 }
 
 
-Forests = Matroid(ground_set = graph)
-# Forests.set_costs(costs)
-Forests.is_independent = is_forest
-print(Forests.max_cost_greedy(costs))
-print(Forests.min_cost_greedy(costs))
+# Forests = Matroid(ground_set = graph)
+# # Forests.set_costs(costs)
+# Forests.is_independent = is_forest
+# print(Forests.max_cost_greedy(costs))
+# print(Forests.min_cost_greedy(costs))
+
+
+### UNIFORM MATROID
+
+R = 2
+
+
+
+def is_uniform_matroid(set):
+    return len(set) <= R
+
+
+###U_5^2
+# Uniform_Matroid = Matroid(ground_set = frozenset({1, 2, 3, 4, 5}))
+# Uniform_Matroid.is_independent = is_uniform_matroid
+# Uniform_Matroid.form_independent_set()
+# print(Uniform_Matroid.check_independent_sets())
+# print(Uniform_Matroid.independent_set)
+
+
+
+
+### LINEAR MATROID
+### VECTOR_DICT (assigns index to column)
+
+vector_dict = {
+    1: np.array([2, 0, 0]),
+    2: np.array([0, 1, 0]),
+    3: np.array([0, 0, 1]),
+    4: np.array([1, 0, 0]),
+    5: np.array([0, 2, 2]),
+    6: np.array([0, 0, 0])
+}
+
+def is_linear_matroid(index_set):
+    if len(index_set) == 0:
+        return True
+    vector_lst = []
+    for index in index_set:
+        vector_lst.append(vector_dict[index])
+    vector_tuple = tuple(vector_lst)
+    matrix = np.vstack(vector_tuple).T
+    return matrix_rank(matrix) == len(matrix[0])
+
+# Linear_Matroid = Matroid(frozenset({1, 2, 3, 4, 5, 6}))
+# Linear_Matroid.is_independent = is_linear_matroid
+# Linear_Matroid.form_independent_set()
+# print(Linear_Matroid.check_independent_sets())
+
+
+# Matroid_1 = Matroid(ground_set = frozenset({1, 2, 3, 4}), circuits = frozenset({frozenset({4}), frozenset({1, 2, 3})}))
+# Matroid_1.form_independent_set_from_circuits()
+# print(Matroid_1.independent_set)
+# print(Matroid_1.check_independent_sets())
+# print(Matroid_1.check_circuits())
+
+
+Matroid_2 = Matroid(ground_set = frozenset({1, 2, 3, 4}), bases = frozenset({frozenset({1, 2}), frozenset({1, 3}), frozenset({2, 3})}))
+Matroid_2.form_independent_set_from_bases()
+print(Matroid_2.independent_set)
+print(Matroid_2.check_independent_sets())
+print(Matroid_2.check_bases())
+
+
 
 
     
