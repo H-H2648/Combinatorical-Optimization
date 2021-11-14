@@ -21,41 +21,55 @@ class Matroid:
     def set_independent_set(self, independent_set):
         self.independent_set = independent_set
 
-    def set_circuits(self, circuits):
-        self.circuits = circuits
+    #usually this function will be defined manually
+    def is_independent(self, some_set):
+        return (some_set in self.independent_set)
 
-    def set_bases(self, bases):
-        self.bases = bases
-
-    def form_independent_set_from_circuits(self):
-        if self.circuits is None:
-            print("ERROR must have circuits")
+    def form_independent_set(self):
         if self.power_ground_set is None:
             self.generate_power_ground_set()
-        else:
-            self.independent_set = set()
-            for element in self.power_ground_set:
-                for circuit in self.circuits:
-                    if circuit.issubset(element):
-                        break
+        self.independent_set = set()
+        for element in self.power_ground_set:
+            if self.is_independent(element):
                 self.independent_set.add(element)
-            self.independent_set = frozenset(self.independent_set)
+        self.independent_set = frozenset(self.independent_set)
 
-    def form_independent_set_from_bases(self):
-        if self.bases is None:
-            print("ERROR must have bases")
-        if self.power_ground_set is None:
-            self.generate_power_ground_set()
-        else:
-            self.independent_set = set()
-            for element in self.power_ground_set:
-                for basis in self.bases:
-                    if element.issubset(basis):
-                        self.independent_set.add(element)
-                        break
-            self.independent_set = frozenset(self.independent_set)
 
-    def check_independent_set(self):
+    def compute_rank(self, some_set):
+        max_size = -1
+        for subset in power_set(some_set):
+            if self.is_independent(subset):
+                size = len(subset)
+                if size > max_size:
+                    max_size = size
+        return max_size
+
+    ### determines if B is a basis with respect to the superset, A
+    ### assumes B is a subset of As
+    def is_basis(self, B, A):
+        if not(self.is_independent(B)):
+            return False
+        for elem in A:
+            if not(elem in B):
+                ###look at set(B) temporarily so that B is mutable
+                temp_B = set(B)
+                temp_B.add(elem)
+                if self.is_independent(temp_B):
+                    return False
+        return True
+
+    ### computes rho: the minimum size of a basis in a set
+    def compute_rho(self, some_set):
+        rho = len(some_set)
+        for subset in power_set(some_set):
+            if self.is_basis(subset, some_set):
+                print(subset)
+                size = len(subset)
+                if size < rho:
+                    rho = size
+        return rho
+
+    def check_independent_sets(self):
         #M1
         if not(frozenset(set()) in self.independent_set):
             return False
@@ -65,36 +79,81 @@ class Matroid:
                 if not(ind_subset in self.independent_set):
                     return False
         #M3'
-        for X, Y in combinations.combination(self.independent_set, 2):
+        for X, Y in combinations(self.independent_set, 2):
             if len(X) != len(Y):
                 if len(Y) > len(X):
                     X, Y = Y, X
+                bad_pair = True
                 for new_elem in X.difference(Y):
-                    if Y.union(frozenset({new_elem})) in self.independent_set:
-                        continue
-                return False
+                    if self.is_independent(Y.union(frozenset({new_elem}))):
+                        bad_pair = False
+                        break
+                if bad_pair:
+                    print(f"M3 FAILED! {X}, {Y}")
+                    return False
         return True
+
+
+
+    def set_circuits(self, circuits):
+        self.circuits = circuits
+
+    def form_independent_set_from_circuits(self):
+        if self.circuits is None:
+            print("ERROR must have circuits")
+        if self.power_ground_set is None:
+            self.generate_power_ground_set()
+        self.independent_set = set()
+        for element in self.power_ground_set:
+            independence=True
+            for circuit in self.circuits:
+                if circuit.issubset(element):
+                    independence=False
+                    break
+            if independence:
+                self.independent_set.add(element)
+        self.independent_set = frozenset(self.independent_set)
+
 
     def check_circuits(self):
         #C1
         if (frozenset(set()) in self.circuits):
             return False
         #C2
-        for C1, C2 in combinations.combination(self.circuits, 2):
+        for C1, C2 in combinations(self.circuits, 2):
             if C1.issubset(C2) or C2.issubset(C1):
                 #since we have combination, if they are already distinct
                 return False
         #C3
-        for C1, C2 in combinations.combination(self.circuits, 2):
-            for element in C1.union(C2):
+        for C1, C2 in combinations(self.circuits, 2):
+            for element in C1.intersection(C2):
                 test_set = (C1.union(C2)).difference(frozenset({element}))
+                bad_pair = True
                 for circuit in self.circuits:
                     if circuit.issubset(test_set):
-                        continue
-            return False
+                        bad_pair = False
+                        break
+                if bad_pair:
+                    return False
         return True
 
+    def set_bases(self, bases):
+        self.bases = bases
     
+    
+    def form_independent_set_from_bases(self):
+        if self.bases is None:
+            print("ERROR must have bases")
+        if self.power_ground_set is None:
+            self.generate_power_ground_set()
+        self.independent_set = set()
+        for element in self.power_ground_set:
+            for basis in self.bases:
+                if element.issubset(basis):
+                    self.independent_set.add(element)
+                    break
+        self.independent_set = frozenset(self.independent_set)
+
 
     def check_bases(self):
         def check_bases_helper(B1, B2, x, bases):
@@ -104,15 +163,14 @@ class Matroid:
             return False
         if self.bases == frozenset(set()):
             return False
-        for B1, B2 in combinations.combination(self.bases, 2):
+        for B1, B2 in combinations(self.bases, 2):
             for x in B1.difference(B2):
                 if check_bases_helper(B1, B2, x, self.bases):
                     continue
                 return False
         return True
 
-    def is_independent(self, some_set):
-        return (some_set in self.independent_set)
+
 
     def set_costs(self, costs_dict):
         costs = []
